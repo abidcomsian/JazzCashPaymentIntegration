@@ -1,0 +1,356 @@
+﻿@*@model CheckOutResponseModel
+
+    @{
+        var tDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+        var txn = "T" + tDate;
+        var amount = "5600";
+    }
+    @section Scripts
+    {
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <!--Merchant will include the JS file for relevant transaction type payment in that form-->
+        <script type="text/javascript" src="https://sandbox.jazzcash.com.pk/HostedPay/Scripts/PayChk3DS.js"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                var pp_payload = {
+                    pp_Version: "1.1",
+                    pp_MerchantID: 'MC4452',
+                    pp_TxnType: "MPAY",
+                    pp_Password: 'null',
+                    pp_TxnRefNo: '@txn',
+                    pp_DiscountedAmount: "9000",
+                    pp_DiscountBank: "",
+                    pp_Amount: '@amount',
+                    pp_TxnCurrency: "PKR",
+                    pp_TxnDateTime: '@tDate',
+                    pp_TxnExpiryDateTime: "",
+                    pp_BillReference: "bill Reference",
+                    pp_Description: "some description",
+                    pp_SecureHash: "94EB6BA8C9A32F10AF115A4FAB07FE60FF6848EEFF374F85632E3678B204EE66"
+                };
+
+                //Merchant will initialize payload required by jazz cash to process payment on the form that
+                //will submit the payment request and call populateJazzCashFields.
+                populateJazzCashFields(pp_payload);
+                $('.errorDiv').hide();
+            });
+
+            $(function () {
+                window.addEventListener("message", invokeCompletion, false);
+            });
+
+            function invokeCompletion(_paPayload) {
+                $("#BlurWin").fadeOut();
+                // MVC Sample:
+                $("#Response").val(_paPayload.data);
+                document.forms[0].submit();
+            }
+        </script>
+    }
+
+
+        <h2>Check Out Fields</h2>
+        <!--Merchant will define action to be redirected to after Jazz cash processes the payment in form tag of html. -->
+        <form id="onlineform" action="@Url.Action("Pay","Home")" method="post">
+            <!--Merchant will place these two divs (below) to load contents of form injected by mastercard. -->
+            <div id="myForm" style="display:none;"></div>
+            <!--Merchant will place this div to load field injected by Jazz cash. -->
+            <div id="JazzCashFields">
+                <div id="JazzCashErrorDiv" style="display: none; color: red"></div>
+                <div id="JazzCashSuccessDiv" style="display: none; color: green"></div>
+            </div>
+            <!--Merchant may additionally place optional fields. -->
+            <div id="merchant">
+                <br />
+                <br />
+                <input type="text" placeholder="Delivery Address" name="pp_Addr" id="pp_Addr"><br />
+                <input type="text" placeholder="Opt Field 1" name="pp_op1" id="pp_op1"><br />
+                <input type="text" placeholder="Opt Field 2" name="pp_op2" id="pp_op2"><br />
+            </div>
+
+            <!--A submit button is placed in Merchant form -->
+            <button class="login" id="buttonsubmitPay" type="submit">Continue</button>
+        </form>
+        <!--Merchant will place these two divs (below) to load contents of form injected by mastercard. -->
+        <div id="stagingForm" style="display: none;">
+        </div>
+        <div id="pp_masterCardResponse" style="background: rgba(255, 193, 7, 0.25); padding: 1rem; margin: 1.5rem; display: none;"></div>*@
+
+
+
+<style>
+    body {
+        background: #fff;
+    }
+
+    form {
+        margin: 0;
+        padding: 0;
+    }
+
+    .jsformWrapper {
+        border: 1px solid rgba(196, 21, 28, 0.50);
+        padding: 2rem;
+        width: 600px;
+        margin: 0 auto;
+        border-radius: 2px;
+        margin-top: 2rem;
+        box-shadow: 0 7px 5px #eee;
+        height: 350px;
+    }
+
+        .jsformWrapper .formFielWrapper label {
+            width: 300px;
+            float: left;
+        }
+
+        .jsformWrapper .formFielWrapper input {
+            width: 300px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            float: left;
+            font-family: sans-serif;
+        }
+
+        .jsformWrapper .formFielWrapper {
+            float: left;
+            margin-bottom: 1rem;
+        }
+
+        .jsformWrapper button {
+            background: rgba(196, 21, 28, 1);
+            border: none;
+            color: #fff;
+            width: 120px;
+            height: 40px;
+            line-height: 25px;
+            font-size: 16px;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+    h3 {
+        text-align: center;
+        margin-top: 3rem;
+        color: rgba(196, 21, 28, 1);
+    }
+</style>
+
+<style>
+    body {
+        background: #fff;
+    }
+
+    form {
+        margin: 0;
+        padding: 0;
+    }
+
+    .jsformWrapper {
+        border: 1px solid rgba(196, 21, 28, 0.50);
+        padding: 2rem;
+        width: 600px;
+        margin: 0 auto;
+        border-radius: 2px;
+        margin-top: 2rem;
+        box-shadow: 0 7px 5px #eee;
+        height: 350px;
+    }
+
+        .jsformWrapper .formFielWrapper label {
+            width: 300px;
+            float: left;
+        }
+
+        .jsformWrapper .formFielWrapper input {
+            width: 300px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            float: left;
+            font-family: sans-serif;
+        }
+
+        .jsformWrapper .formFielWrapper {
+            float: left;
+            margin-bottom: 1rem;
+        }
+
+        .jsformWrapper button {
+            background: rgba(196, 21, 28, 1);
+            border: none;
+            color: #fff;
+            width: 120px;
+            height: 40px;
+            line-height: 25px;
+            font-size: 16px;
+            font-family: sans-serif;
+            text-transform: uppercase;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+    h3 {
+        text-align: center;
+        margin-top: 3rem;
+        color: rgba(196, 21, 28, 1);
+    }
+</style>
+<script>
+    function submitForm() {
+
+        var IntegritySalt = document.getElementById("salt").innerText;
+
+        var hash = CryptoJS.HmacSHA256(document.getElementById("hashValuesString").value, IntegritySalt);
+
+        document.getElementsByName("pp_SecureHash")[0].value = hash + '';
+
+        document.jsform.submit();
+    }
+</script>
+<script src="https://sandbox.jazzcash.com.pk/Sandbox/Scripts/hmac-sha256.js"></script>
+
+<h3>JazzCash HTTP POST (Page Redirection) Testing</h3>
+<div class="jsformWrapper">
+    <form name="jsform" method="post" action="https://sandbox.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform/">
+        <input type="hidden" name="pp_Version" value="1.1">
+        <input type="hidden" name="pp_TxnType" value="">
+        <input type="hidden" name="pp_Language" value="EN">
+        <input type="hidden" name="pp_MerchantID" value="MC4452">
+        <input type="hidden" name="pp_SubMerchantID" value="">
+        <input type="hidden" name="pp_Password" value="">
+        <input type="hidden" name="pp_BankID" value="TBANK">
+        <input type="hidden" name="pp_ProductID" value="RETL">
+
+        <div class="formFielWrapper">
+            <label class="active">Ref Number: </label>
+            <input type="text" name="pp_TxnRefNo" value="T20190211155251">
+        </div>
+
+        <div class="formFielWrapper">
+            <label class="active">Amount: </label>
+            <input type="text" name="pp_Amount" value="1000">
+        </div>
+
+        <input type="hidden" name="pp_TxnCurrency" value="PKR">
+        <input type="hidden" name="pp_TxnDateTime" value="20190211155309">
+        <div class="formFielWrapper">
+            <label class="active">Bill Reference: </label>
+            <input type="text" name="pp_BillReference" value="billRef">
+        </div>
+
+        <div class="formFielWrapper">
+            <label class="active">Description: </label>
+            <input type="text" name="pp_Description" value="Description of transaction">
+        </div>
+
+        <input type="hidden" name="pp_TxnExpiryDateTime" value="20190212155309">
+
+        <div class="formFielWrapper">
+            <label class="active">Return URL: </label>
+            <input type="text" name="pp_ReturnURL" value="http://localhost:51880/">
+        </div>
+
+        <input type="hidden" name="pp_SecureHash" value="2da1823dc796b923bf1998345087829695a533890362547fe6fab7d24f3e2c45">
+        <input type="hidden" name="ppmpf_1" value="1">
+        <input type="hidden" name="ppmpf_2" value="2">
+        <input type="hidden" name="ppmpf_3" value="3">
+        <input type="hidden" name="ppmpf_4" value="4">
+        <input type="hidden" name="ppmpf_5" value="5">
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <label id="salt" style="display:none;">xt2x9331f3</label>
+    <br><br>
+    <div class="formFielWrapper">
+        <label class="active">Hash values string: </label>
+        <input type="text" id="hashValuesString" value="">
+        <br><br>
+    </div>
+
+</div>
+
+<script>
+
+    var IntegritySalt = document.getElementById("salt").innerText;
+    hashString = '';
+
+    hashString += IntegritySalt + '&';
+
+    if (document.getElementsByName("pp_Amount")[0].value != '') {
+        hashString += document.getElementsByName("pp_Amount")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_BankID")[0].value != '') {
+        hashString += document.getElementsByName("pp_BankID")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_BillReference")[0].value != '') {
+        hashString += document.getElementsByName("pp_BillReference")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_Description")[0].value != '') {
+        hashString += document.getElementsByName("pp_Description")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_Language")[0].value != '') {
+        hashString += document.getElementsByName("pp_Language")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_MerchantID")[0].value != '') {
+        hashString += document.getElementsByName("pp_MerchantID")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_Password")[0].value != '') {
+        hashString += document.getElementsByName("pp_Password")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_ProductID")[0].value != '') {
+        hashString += document.getElementsByName("pp_ProductID")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_ReturnURL")[0].value != '') {
+        hashString += document.getElementsByName("pp_ReturnURL")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_SubMerchantID")[0].value != '') {
+        hashString += document.getElementsByName("pp_SubMerchantID")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_TxnCurrency")[0].value != '') {
+        hashString += document.getElementsByName("pp_TxnCurrency")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_TxnDateTime")[0].value != '') {
+        hashString += document.getElementsByName("pp_TxnDateTime")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_TxnExpiryDateTime")[0].value != '') {
+        hashString += document.getElementsByName("pp_TxnExpiryDateTime")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_TxnRefNo")[0].value != '') {
+        hashString += document.getElementsByName("pp_TxnRefNo")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_TxnType")[0].value != '') {
+        hashString += document.getElementsByName("pp_TxnType")[0].value + '&';
+    }
+    if (document.getElementsByName("pp_Version")[0].value != '') {
+        hashString += document.getElementsByName("pp_Version")[0].value + '&';
+    }
+    if (document.getElementsByName("ppmpf_1")[0].value != '') {
+        hashString += document.getElementsByName("ppmpf_1")[0].value + '&';
+    }
+    if (document.getElementsByName("ppmpf_2")[0].value != '') {
+        hashString += document.getElementsByName("ppmpf_2")[0].value + '&';
+    }
+    if (document.getElementsByName("ppmpf_3")[0].value != '') {
+        hashString += document.getElementsByName("ppmpf_3")[0].value + '&';
+    }
+    if (document.getElementsByName("ppmpf_4")[0].value != '') {
+        hashString += document.getElementsByName("ppmpf_4")[0].value + '&';
+    }
+    if (document.getElementsByName("ppmpf_5")[0].value != '') {
+        hashString += document.getElementsByName("ppmpf_5")[0].value + '&';
+    }
+
+    hashString = hashString.slice(0, -1);
+
+    var hash = CryptoJS.HmacSHA256(hashString, IntegritySalt);
+
+    document.getElementsByName("pp_SecureHash")[0].value = hash + '';
+
+    console.log('string: ' + hashString);
+    console.log('hash: ' + document.getElementsByName("pp_SecureHash")[0].value);
+
+    document.getElementById("hashValuesString").value = hashString;
+
+</script>
